@@ -1,0 +1,136 @@
+---
+title: "Home Prices Prediction"
+author: "jay Yanamandala"
+date: "11/5/2021"
+subtitle: "King County Washington State"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE, results="hide", echo=FALSE, warning=FALSE, comment="", message=FALSE}
+knitr::opts_chunk$set(
+    echo = FALSE
+)
+```
+
+```{r libraries, results="hide", echo=FALSE, warning=FALSE, comment="", message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(car)
+library(lubridate)
+```
+
+## Description
+This presentation is related to predicting home prices in King County Washington State. Since the final assignment is related to Developing Data Products CourseRA course, to keep it simple, prediction is based only on:  
+1. Sqft Living  
+2. Number of Bedrooms  
+3. Number of Bathrooms  
+  
+This reproducible pitch and Shiny App are presented to showcase the prediction model  
+
+Access the shiny app [here](https://jyanamandala.shinyapps.io/price_prediction/)  
+Access the github repo that hosts the files [here](https://github.com/jayc279/Price_Prediction.git)  
+  
+## King County Home Prices Dataset
+The dataset was provided for one of the assignments in "Machine Learning Specialization" offered by Univ of Washington, and taught by:  
+-- Emily Fox, Amazon Professor of Machine Learning  
+-- Carlos Guestrin, Amazon Professor of Machine Learning  
+  
+## Dataset Exploration and Setup for Analysis
+Before defining Shiny ui.R inputs, we clean the dataset for simple presentation  
+* Remove columns that are not needed for the current analysis  
+* Convert integer to numeric  
+* Update columns that have value '0' with mean of previous five values  
+* Sort data for sliders in ui.R  
+  
+```{r loaddata, results="hide", echo=FALSE, warning=FALSE, comment="", message=FALSE}
+## Setup dataset and cleanup for model predictions
+house <- read.csv2(file="data/home_data.csv", sep=",", na.strings = c ("","NA"))
+
+## Remove unwanted columns from data frame
+remove_cols <- c("waterfront", "view", "lat", "long", "mpgsp", "yr_renovated", "condition", "sqft_basement","sqft_living15","sqft_lot15")
+house <- subset(house, select= !(names(house) %in% remove_cols))
+
+## Convert integer to numeric
+house <- house %>% mutate_if(is.integer, as.numeric)
+house$floors <- as.numeric(house$floors)
+house$bathrooms <- as.numeric(house$bathrooms)
+
+## Convert date to as.Date
+house <- house %>% mutate(date = ymd_hms(date))
+house$date <- as.Date(house$date)
+
+## Check class of 'house' features
+## str(house)
+
+## View house in Table format - Interactive
+## View(house)
+
+## Update columns other than "id", "date", "price" to values that are non-zero
+## Get sum of previous five and divide by 5 to get a value and update dataset for the column
+## COlumns affected are 'bathrooms' and 'bedrooms'
+for(i in 1:ncol(house)) {
+	cnt <- nrow(house[house[i] == 0,])
+	if ( !grepl('id|date|price', names(house[i])) ) {
+		## print(names(house[i]))
+		if ( cnt ) {
+			x <- which(house[i] == 0, arr.ind=TRUE)	
+			x <- as.data.frame(x)
+			for(ni in 1:nrow(x)) {
+				rowVal <- x$row[ni]
+				newVal <- round(sum(house[(rowVal-5):(rowVal-1),4]/5),0)
+			    house[ rowVal, i] <- newVal
+				## print(names(house[i]))
+			}
+		}
+	}
+}
+
+## Check to see # of bathrooms and batromms are '0'
+length(house[,house$bedrooms == 0])
+length(house[,house$bathrooms == 0])
+```
+Printing first 10 rows, and few columns of dataset
+```{r print_head, echo=FALSE, warning=FALSE, comment="", message=FALSE}
+head(subset(house, select = -c(1:3,7:10)), 10)
+```
+## Define UI
+In our ui.R file we define the following inputs  
+* `slidersqft` - Sqft of living space  
+* `sliderbed` - Number of Bed rooms  
+* `sliderbath` - Number of Bath rooms  
+* `showModel` - Radio button to select which 'lm' model to plot  
+
+In our server.R we capture the input from ui.R and  
+* Plot a model - default plot is sqft_living + bedrooms + bathrooms  
+* Print a table of 3 models  
+	1. price -vs- sqft_living  
+	2. price -vs- sqft_living + bedrooms  
+	2. price -vs- sqft_living + bedrooms + bathrooms  
+
+## Build LM model  
+* House Price -vs- Sqft-Living, # of Bedrooms, and #of Bathrooms  
+* Predict Price  
+```{r build_model, results="hide", echo=FALSE, warning=FALSE, comment="", message=FALSE}
+model3 <- lm(price ~ sqft_living + bedrooms + bathrooms, data = house)
+slidersqft <- 2750
+sliderbed <-  5
+sliderbath <- 3.5
+predict_new <- predict(model3, newdata = data.frame(sqft_living = slidersqft, bedrooms=sliderbed, bathrooms=sliderbath))
+```
+  
+Value of Predicted home sqft `2750`, bedrooms `5`, bathrooms `3.5` is:  
+**`r paste0('$',formatC(predict_new, big.mark=',', format = 'f'))`**  
+
+## Plot Linear Regression Model 
+* Residuals -vs- Fitted  
+* Noraml Q-Q  
+* sqrt of Standardized Residuals -vs- Fitted  
+* Standardized Residuals -vs- Leverage
+```{r setupplot, echo=FALSE, warning=FALSE, comment="", message=FALSE}
+# Define server logic
+par(mfrow=c(2,2))
+plot(model3)
+```
+
