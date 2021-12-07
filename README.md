@@ -7,7 +7,7 @@ This presentation is related to predicting home prices in King County Washington
 This reproducible pitch and Shiny App are presented to showcase the prediction model
 
 Access the shiny app [here](https://jyanamandala.shinyapps.io/Price_Prediction/)
-Access the github repo that hosts the files [here](https://github.com/jayc279/Price_Prediction.git)
+Access the github repo that hosts the files [here](https://github.com/jayc279/Predicting_Home_Prices_King_County_Washington.git)
 
 ### King County Home Prices Dataset
 The dataset was provided for one of the assignments in "Machine Learning Specialization" offered by Univ of Washington, and taught by:
