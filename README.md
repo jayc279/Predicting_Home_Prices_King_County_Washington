@@ -6,9 +6,9 @@ This presentation is related to predicting home prices in King County Washington
 3. Number of Bathrooms  
 This reproducible pitch and Shiny App are presented to showcase the prediction model
 
-[**Access the shiny app**](https://jyanamandala.shinyapps.io/Price_Prediction/)
-[**Access the GitHub repo**](https://github.com/jayc279/Predicting_Home_Prices_King_County_Washington.git)
-
+[**Access the shiny app**](https://jyanamandala.shinyapps.io/Price_Prediction/)  
+[**Access the GitHub repo**](https://github.com/jayc279/Predicting_Home_Prices_King_County_Washington.git)  
+  
 ### King County Home Prices Dataset
 The dataset was provided for one of the assignments in "Machine Learning Specialization" offered by Univ of Washington, and taught by:
 -- Emily Fox, Amazon Professor of Machine Learning
